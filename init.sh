@@ -14,21 +14,30 @@ FORGEJO_CONFIG_SOURCE="${REPO_PATH}/app.ini"
 FORGEJO_CONFIG_DEST="/usr/local/etc/forgejo/conf/app.ini"
 FORGEJO_CONFIG_DIR="/usr/local/etc/forgejo/conf"
 
-# 1. Check if source app.ini exists
+# --- Set Permissions on Source Repository ---
+# CRITICAL STEP: The 'git' user needs read access to the source files.
+echo "Setting permissions on source repository: ${REPO_PATH}"
+chown -R root:git "${REPO_PATH}"
+chmod g+rX "${REPO_PATH}" # Give group read/execute permissions
+
+# Check if source app.ini exists
 if [ ! -f "${FORGEJO_CONFIG_SOURCE}" ]; then
   echo "[ERROR] 'app.ini' not found in this directory. Exiting."
   exit 1
 fi
 
-# 2. Ensure destination directory exists and has correct ownership
+# Ensure destination directory exists and has correct ownership
 echo "Verifying destination directory..."
 mkdir -p "${FORGEJO_CONFIG_DIR}"
 chown git:git "${FORGEJO_CONFIG_DIR}"
 
-# 3. Create the symlink, forcing an overwrite if the destination exists.
+# Create the symlink, forcing an overwrite if the destination exists.
 echo "Creating symlink for app.ini..."
 ln -sf "${FORGEJO_CONFIG_SOURCE}" "${FORGEJO_CONFIG_DEST}"
 
-# 4. Set ownership on the link itself (good practice)
+# Set ownership on the link itself (good practice)
 # The -h flag ensures we change the link, not the file it points to
 chown -h git:git "${FORGEJO_CONFIG_DEST}"
+
+echo "--- Setup Complete ---"
+echo "You can now enable and start the Forgejo service."
